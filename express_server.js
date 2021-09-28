@@ -12,6 +12,13 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const getLongURL = function(shortURL) {
+  if (urlDatabase[shortURL]) {
+    return urlDatabase[shortURL];
+  }
+  return "URL Doesn't Exist!";
+};
+
 const generateRandomString = function() {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -51,7 +58,10 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const shortURL = req.params.shortURL;
+  const longURL = getLongURL(shortURL);
+  console.log(longURL);
+  const templateVars = { shortURL, longURL };
   res.render("urls_show", templateVars);
 });
 
