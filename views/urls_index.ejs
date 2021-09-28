@@ -27,12 +27,17 @@
         <!-- loop through each urls -->
         <% for(let url in urls) { %>
           <tr>
-            <td>
-              <%= url %>
-            </td>
-            <td>
-              <%= urls[url] %>
-            </td>
+            <form method="POST" action="/urls/<%= url %>/delete">
+              <td>
+                <%= url %>
+              </td>
+              <td>
+                <%= urls[url] %>
+              </td>
+              <td>
+                <button type="submit" class="btn btn-outline-danger">Delete</button>
+              </td>
+            </form>
           </tr>
           <% } %>
       </tbody>
