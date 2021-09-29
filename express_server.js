@@ -59,6 +59,25 @@ const findUser = function(email, users) {
   return false;
 };
 
+const isFormInvalid = function(formElements) {
+
+  const emailError = formElements.email === '' ? 'Invalid Email' : '';
+  const passwordError = formElements.password === '' ? 'Invalid Password' : '';
+
+  if (emailError === '' && passwordError === '') {
+    return false;
+  }
+
+  return {
+    user: null,
+    email: formElements.email,
+    password: formElements.password,
+    emailError,
+    passwordError
+  };
+
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -81,14 +100,12 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const {email, password} = req.body;
   const foundUser = findUser(email, users);
-  
-  const emailError = email === '' ? 'Invalid Email' : '';
-  const passwordError = password === '' ? 'Invalid Password' : '';
 
-  if (emailError !== '' || passwordError !== '') {
+  const invalidForm = isFormInvalid({email, password});
+  
+  if (invalidForm) {
     res.status(404);
-    const templateVars = { user: null, email, password, emailError, passwordError };
-    res.render('user_register', templateVars);
+    res.render('user_register', invalidForm);
     return;
   }
 
