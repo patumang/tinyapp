@@ -73,7 +73,7 @@ app.get("/hello", (req, res) => {
 
 //Code to get Registration User Form
 app.get("/register", (req, res) => {
-  const templateVars = { user: null };
+  const templateVars = { user: null, email: '', password: '', emailError:'', passwordError:'' };
   res.render('user_register', templateVars);
 });
 
@@ -81,6 +81,21 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const {email, password} = req.body;
   const foundUser = findUser(email, users);
+  
+  const emailError = email === '' ? 'Invalid Email' : '';
+  const passwordError = password === '' ? 'Invalid Password' : '';
+
+  if (emailError !== '' || passwordError !== '') {
+    const templateVars = { user: null, email, password, emailError, passwordError };
+    res.render('user_register', templateVars);
+    return;
+  }
+  
+  if (foundUser) {
+    res.send("User Already Exist!");
+    return;
+  }
+
   if (foundUser) {
     res.send("User Already Exist!");
     return;
