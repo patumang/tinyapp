@@ -7,7 +7,7 @@ app.set("view engine", "ejs");
 
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
-const { v4: uuidv4 } = require("uuid");
+//const { v4: uuidv4 } = require("uuid");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -48,6 +48,17 @@ const generateRandomString = function() {
   return result;
 };
 
+const findUser = function(email, users) {
+
+  for (let userId in users) {
+    if (users[userId]['email'] === email) {
+      return users[userId];
+    }
+  }
+
+  return false;
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -68,7 +79,23 @@ app.get("/register", (req, res) => {
 
 //Code to Register user by adding user data to db object and set cookie
 app.post("/register", (req, res) => {
-  console.log(req.body);
+  const {email, password} = req.body;
+  const foundUser = findUser(email, users);
+  if (foundUser) {
+    res.send("User Already Exist!");
+    return;
+  }
+
+  const userId = generateRandomString();
+  users[userId] = {
+    id: userId,
+    email,
+    password
+  };
+
+  res.cookie('user_id', userId);
+  res.redirect('/urls');
+
 });
 
 //Code to Login
