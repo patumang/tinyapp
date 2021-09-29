@@ -86,13 +86,16 @@ app.post("/register", (req, res) => {
   const passwordError = password === '' ? 'Invalid Password' : '';
 
   if (emailError !== '' || passwordError !== '') {
+    res.status(404);
     const templateVars = { user: null, email, password, emailError, passwordError };
     res.render('user_register', templateVars);
     return;
   }
-  
+
   if (foundUser) {
-    res.send("User Already Exist!");
+    res.status(404);
+    const templateVars = { user: null, email, password, emailError: 'User already Exist!', passwordError:'' };
+    res.render('user_register', templateVars);
     return;
   }
 
