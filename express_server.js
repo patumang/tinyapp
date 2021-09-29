@@ -4,8 +4,10 @@ const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
 
+
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const { v4: uuidv4 } = require("uuid");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -13,6 +15,19 @@ app.use(cookieParser());
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
+};
+
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
 };
 
 const getLongURL = function(shortURL) {
@@ -49,6 +64,11 @@ app.get("/hello", (req, res) => {
 app.get("/register", (req, res) => {
   const templateVars = { username: null };
   res.render('user_register', templateVars);
+});
+
+//Code to Register user by adding user data to db object and set cookie
+app.post("/register", (req, res) => {
+  console.log(req.body);
 });
 
 //Code to Login
