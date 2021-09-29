@@ -116,6 +116,12 @@ app.post("/register", (req, res) => {
 
 });
 
+//Code to get User Login Form
+app.get("/login", (req, res) => {
+  const templateVars = { user: null, email: '', password: '', emailError: '', passwordError: '' };
+  res.render('user_login', templateVars);
+});
+
 //Code to Login
 app.post("/login", (req, res) => {
   const username = req.body.username;
