@@ -45,6 +45,12 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+//Code to get Registration User Form
+app.get("/register", (req, res) => {
+  const templateVars = { username: null };
+  res.render('user_register', templateVars);
+});
+
 //Code to Login
 app.post("/login", (req, res) => {
   const username = req.body.username;
