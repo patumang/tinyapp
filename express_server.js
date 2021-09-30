@@ -1,12 +1,14 @@
 const express = require("express");
+const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
+
 const app = express();
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
 
 
-const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
 //const { v4: uuidv4 } = require("uuid");
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -23,16 +25,19 @@ const urlDatabase = {
   }
 };
 
+const hashedPassword1 = bcrypt.hashSync("purple-monkey-dinosaur", 10);
+const hashedPassword2 = bcrypt.hashSync("dishwasher-funk", 10);
+
 const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: hashedPassword1
   },
   "aJ48lW": {
     id: "aJ48lW",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: hashedPassword2
   }
 };
 
@@ -77,7 +82,7 @@ const isFormInvalid = function(formElements) {
   return {
     user: null,
     email: formElements.email,
-    password: formElements.password,
+    password: '',
     emailError,
     passwordError
   };
@@ -94,7 +99,7 @@ const authenticateUser = function(formElements, users) {
     return { status: false, emailError: 'User Email does not Exist!', passwordError: '' };
   }
 
-  if (user.password !== password) {
+  if (!bcrypt.compareSync(password, user.password)) {
     return { status: false, emailError: '', passwordError: 'Password doesn\'t Match!' };
   }
   
@@ -138,7 +143,8 @@ app.get("/register", (req, res) => {
 
 //Code to Register user by adding user data to db object and set cookie
 app.post("/register", (req, res) => {
-  const {email, password} = req.body;
+  const email = req.body.email;
+  const password = bcrypt.hashSync(req.body.password, 10);
 
   const invalidForm = isFormInvalid({email, password});
   
@@ -152,7 +158,7 @@ app.post("/register", (req, res) => {
 
   if (foundUser) {
     res.status(404);
-    const templateVars = { user: null, email, password, emailError: 'User already Exist!', passwordError:'' };
+    const templateVars = { user: null, email, password: '', emailError: 'User already Exist!', passwordError:'' };
     res.render('user_register', templateVars);
     return;
   }
@@ -200,7 +206,7 @@ app.post("/login", (req, res) => {
     const templateVars = {
       user: null,
       email,
-      password,
+      password: '',
       emailError: autheticatedUser.emailError,
       passwordError: autheticatedUser.passwordError
     };
