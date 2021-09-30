@@ -14,6 +14,8 @@
 <body>
   <%- include('partials/_header') %>
   <main style="margin: 1em;">
+    <!-- if user is logged in show URLs -->
+    <% if (user) {%>
     <h3>My URLs</h3>
     <!-- display data in table -->
     <table class="table">
@@ -27,6 +29,13 @@
       </thead>
       <tbody>
         <!-- loop through each urls -->
+        <% if (Object.keys(urls).length === 0) { %> 
+          <tr>
+            <td>
+              <h6>You haven't created any URLs yet. Please click <a href="/urls/new">here</a> to create your first URL.</h6>
+            </td>
+          </tr>
+        <% } %> 
         <% for(let url in urls) { %>
           <tr>
             <form method="POST" action="/urls/<%= url %>/delete">
@@ -44,9 +53,12 @@
               </td>
             </form>
           </tr>
-          <% } %>
+        <% } %>
       </tbody>
     </table>
+    <% } else { %>
+    <h5>Please <a href="/login">login</a> to see your URLs</h5>
+    <% } %>
   </main>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
