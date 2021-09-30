@@ -3,6 +3,8 @@ const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
+
+const { urlDatabase, users } = require('./db');
 const { getUserByEmail } = require('./helpers');
 
 const app = express();
@@ -19,33 +21,6 @@ app.use(cookieSession({
   name: 'session',
   keys: ['%jclanLjsH#!BQ83', 'skf#SL48lp2*0aP']
 }));
-
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW"
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW"
-  }
-};
-
-const hashedPassword1 = bcrypt.hashSync("purple-monkey-dinosaur", 10);
-const hashedPassword2 = bcrypt.hashSync("dishwasher-funk", 10);
-
-const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: hashedPassword1
-  },
-  "aJ48lW": {
-    id: "aJ48lW",
-    email: "user2@example.com",
-    password: hashedPassword2
-  }
-};
 
 const getLongURL = function(shortURL) {
   if (urlDatabase[shortURL]) {
