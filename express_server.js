@@ -21,7 +21,7 @@ app.use(cookieSession({
   keys: ['%jclanLjsH#!BQ83', 'skf#SL48lp2*0aP']
 }));
 
-app.use((req, res, next) => {
+const redirectToUrls = function(req, res, next) {
   const loggedInUserId = req.session["user_id"];
   const path = req.path;
   const allowedPaths = ["/", "/register", "/login"];
@@ -31,11 +31,10 @@ app.use((req, res, next) => {
   }
 
   next();
-});
-
+};
 
 //Code to get Registration User Form
-app.get("/register", (req, res) => {
+app.get("/register", redirectToUrls, (req, res) => {
   const templateVars = { user: null, email: '', password: '', emailError:'', passwordError:'' };
   res.render('user_register', templateVars);
 });
@@ -74,7 +73,7 @@ app.post("/register", (req, res) => {
 });
 
 //Code to get User Login Form
-app.get("/login", (req, res) => {
+app.get("/login", redirectToUrls, (req, res) => {
   const templateVars = { user: null, email: '', password: '', emailError: '', passwordError: '' };
   res.render('user_login', templateVars);
 });
