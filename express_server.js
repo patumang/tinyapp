@@ -29,8 +29,8 @@ const users = {
     email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
-  "user2RandomID": {
-    id: "user2RandomID",
+  "aJ48lW": {
+    id: "aJ48lW",
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
@@ -101,7 +101,7 @@ const authenticateUser = function(formElements, users) {
   return { status: true, user};
 };
 
-const urlsForUser = function (id, urlDatabase) {
+const urlsForUser = function(id, urlDatabase) {
   const filteredURLs = {};
   for (let urlId in urlDatabase) {
     if (urlDatabase[urlId]['userID'] === id) {
@@ -129,6 +129,7 @@ app.get("/register", (req, res) => {
 
   if (loggedInUserId) {
     res.redirect('/urls');
+    return;
   }
 
   const templateVars = { user: null, email: '', password: '', emailError:'', passwordError:'' };
@@ -174,6 +175,7 @@ app.get("/login", (req, res) => {
 
   if (loggedInUserId) {
     res.redirect('/urls');
+    return;
   }
 
   const templateVars = { user: null, email: '', password: '', emailError: '', passwordError: '' };
@@ -249,19 +251,49 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
+
+  if (!urlDatabase[shortURL]) {
+    res.status(403).send('Input short URL is not valid!');
+    return;
+  }
+
   const longURL = getLongURL(shortURL);
 
   const loggedInUserId = req.cookies["user_id"];
+
+  let userCanEdit = false;
+
+  if (loggedInUserId && loggedInUserId === urlDatabase[shortURL]['userID']) {
+    userCanEdit = true;
+  }
   const user = users[loggedInUserId];
 
-  const templateVars = { user, shortURL, longURL };
+  const templateVars = { user, userCanEdit, shortURL, longURL };
   res.render("urls_show", templateVars);
 });
 
 // Code to Update longURL
 app.post("/urls/:shortURL", (req, res) => {
+  const loggedInUserId = req.cookies["user_id"];
+
+  if (!loggedInUserId) {
+    res.status(403).send('You are not logged in currently!');
+    return;
+  }
+
   const shortURL = req.params.shortURL;
   const newLongURL = req.body.newURL;
+
+  if (!urlDatabase[shortURL]) {
+    res.status(403).send('Input short URL is not valid!');
+    return;
+  }
+
+  if (loggedInUserId && loggedInUserId !== urlDatabase[shortURL]['userID']) {
+    res.status(403).send('You doesn\'t own this URL!');
+    return;
+  }
+
   urlDatabase[shortURL]['longURL'] = newLongURL;
 
   res.redirect('/urls');
@@ -269,6 +301,12 @@ app.post("/urls/:shortURL", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
+
+  if (!urlDatabase[shortURL]) {
+    res.status(403).send('Input short URL is not valid!');
+    return;
+  }
+
   const longURL = getLongURL(shortURL);
 
   if (longURL === "URL Doesn't Exist!") {
@@ -280,7 +318,25 @@ app.get("/u/:shortURL", (req, res) => {
 
 //Code to Delete shortURL from params
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const loggedInUserId = req.cookies["user_id"];
+
+  if (!loggedInUserId) {
+    res.status(403).send('You are not logged in currently!');
+    return;
+  }
+
   const shortURL = req.params.shortURL;
+
+  if (!urlDatabase[shortURL]) {
+    res.status(403).send('Input short URL is not valid!');
+    return;
+  }
+
+  if (loggedInUserId && loggedInUserId !== urlDatabase[shortURL]['userID']) {
+    res.status(403).send('You doesn\'t own this URL!');
+    return;
+  }
+  
   delete urlDatabase[shortURL];
   res.redirect('/urls');
 });
