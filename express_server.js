@@ -109,6 +109,12 @@ app.get("/hello", (req, res) => {
 
 //Code to get Registration User Form
 app.get("/register", (req, res) => {
+  const loggedInUserId = req.cookies["user_id"];
+
+  if (loggedInUserId) {
+    res.redirect('/urls');
+  }
+
   const templateVars = { user: null, email: '', password: '', emailError:'', passwordError:'' };
   res.render('user_register', templateVars);
 });
@@ -148,6 +154,12 @@ app.post("/register", (req, res) => {
 
 //Code to get User Login Form
 app.get("/login", (req, res) => {
+  const loggedInUserId = req.cookies["user_id"];
+
+  if (loggedInUserId) {
+    res.redirect('/urls');
+  }
+
   const templateVars = { user: null, email: '', password: '', emailError: '', passwordError: '' };
   res.render('user_login', templateVars);
 });
