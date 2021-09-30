@@ -5,15 +5,12 @@ const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
 
 const { urlDatabase, users } = require('./db');
-const { getUserByEmail } = require('./helpers');
+const { getUserByEmail, getLongURL, generateRandomString } = require('./helpers/helpers');
 
 const app = express();
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
-
-
-//const { v4: uuidv4 } = require("uuid");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -21,24 +18,6 @@ app.use(cookieSession({
   name: 'session',
   keys: ['%jclanLjsH#!BQ83', 'skf#SL48lp2*0aP']
 }));
-
-const getLongURL = function(shortURL) {
-  if (urlDatabase[shortURL]) {
-    return urlDatabase[shortURL]['longURL'];
-  }
-  return "URL Doesn't Exist!";
-};
-
-const generateRandomString = function() {
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < 6; i++) {
-    result += characters.charAt(Math.floor(Math.random() *
-      charactersLength));
-  }
-  return result;
-};
 
 const isFormInvalid = function(formElements) {
 
@@ -241,7 +220,7 @@ app.get("/urls/:shortURL", (req, res) => {
     return;
   }
 
-  const longURL = getLongURL(shortURL);
+  const longURL = getLongURL(shortURL, urlDatabase);
 
   //const loggedInUserId = req.cookies["user_id"];
   const loggedInUserId = req.session["user_id"];
@@ -293,7 +272,7 @@ app.get("/u/:shortURL", (req, res) => {
     return;
   }
 
-  const longURL = getLongURL(shortURL);
+  const longURL = getLongURL(shortURL, urlDatabase);
 
   if (longURL === "URL Doesn't Exist!") {
     res.status(404).send("Sorry can't find URL!");
