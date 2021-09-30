@@ -26,4 +26,14 @@ const generateRandomString = function() {
   return result;
 };
 
-module.exports = { getUserByEmail, getLongURL, generateRandomString };
+const urlsForUser = function(id, urlDatabase) {
+  const filteredURLs = {};
+  for (let urlId in urlDatabase) {
+    if (urlDatabase[urlId]['userID'] === id) {
+      filteredURLs[urlId] = urlDatabase[urlId];
+    }
+  }
+  return filteredURLs;
+};
+
+module.exports = { getUserByEmail, getLongURL, generateRandomString, urlsForUser };

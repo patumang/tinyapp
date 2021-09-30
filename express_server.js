@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
 
 const { urlDatabase, users } = require('./db');
-const { getUserByEmail, getLongURL, generateRandomString } = require('./helpers/helper');
+const { getUserByEmail, getLongURL, generateRandomString, urlsForUser } = require('./helpers/helper');
 const { isFormInvalid } = require('./helpers/validation');
 const { authenticateUser } = require('./helpers/authentication');
 
@@ -20,28 +20,6 @@ app.use(cookieSession({
   name: 'session',
   keys: ['%jclanLjsH#!BQ83', 'skf#SL48lp2*0aP']
 }));
-
-const urlsForUser = function(id, urlDatabase) {
-  const filteredURLs = {};
-  for (let urlId in urlDatabase) {
-    if (urlDatabase[urlId]['userID'] === id) {
-      filteredURLs[urlId] = urlDatabase[urlId];
-    }
-  }
-  return filteredURLs;
-};
-
-/* app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-}); */
 
 //Code to get Registration User Form
 app.get("/register", (req, res) => {
