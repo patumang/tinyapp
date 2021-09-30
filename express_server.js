@@ -78,6 +78,23 @@ const isFormInvalid = function(formElements) {
 
 };
 
+const authenticateUser = function(formElements, users) {
+  const email = formElements.email;
+  const password = formElements.password;
+
+  const user = findUser(email, users);
+
+  if (!user) {
+    return { status: false, emailError: 'User Email does not Exist!', passwordError: '' };
+  }
+
+  if (user.password !== password) {
+    return { status: false, emailError: '', passwordError: 'Password doesn\'t Match!' };
+  }
+  
+  return { status: true, user};
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -99,7 +116,6 @@ app.get("/register", (req, res) => {
 //Code to Register user by adding user data to db object and set cookie
 app.post("/register", (req, res) => {
   const {email, password} = req.body;
-  const foundUser = findUser(email, users);
 
   const invalidForm = isFormInvalid({email, password});
   
@@ -109,15 +125,12 @@ app.post("/register", (req, res) => {
     return;
   }
 
+  const foundUser = findUser(email, users);
+
   if (foundUser) {
     res.status(404);
     const templateVars = { user: null, email, password, emailError: 'User already Exist!', passwordError:'' };
     res.render('user_register', templateVars);
-    return;
-  }
-
-  if (foundUser) {
-    res.send("User Already Exist!");
     return;
   }
 
@@ -141,8 +154,32 @@ app.get("/login", (req, res) => {
 
 //Code to Login
 app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie('username', username);
+  const { email, password } = req.body;
+
+  const invalidForm = isFormInvalid({ email, password });
+
+  if (invalidForm) {
+    res.status(404);
+    res.render('user_login', invalidForm);
+    return;
+  }
+
+  const autheticatedUser = authenticateUser({ email, password }, users);
+  if (!autheticatedUser.status) {
+    res.status(403);
+    const templateVars = {
+      user: null,
+      email,
+      password,
+      emailError: autheticatedUser.emailError,
+      passwordError: autheticatedUser.passwordError
+    };
+
+    res.render('user_login', templateVars);
+    return;
+  }
+
+  res.cookie('user_id', autheticatedUser.user.id);
   res.redirect('/urls');
 });
 
