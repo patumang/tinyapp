@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
+const { getUserByEmail } = require('./helpers');
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -64,17 +65,6 @@ const generateRandomString = function() {
   return result;
 };
 
-const findUser = function(email, users) {
-
-  for (let userId in users) {
-    if (users[userId]['email'] === email) {
-      return users[userId];
-    }
-  }
-
-  return false;
-};
-
 const isFormInvalid = function(formElements) {
 
   const emailError = formElements.email === '' ? 'Invalid Email' : '';
@@ -98,7 +88,7 @@ const authenticateUser = function(formElements, users) {
   const email = formElements.email;
   const password = formElements.password;
 
-  const user = findUser(email, users);
+  const user = getUserByEmail(email, users);
 
   if (!user) {
     return { status: false, emailError: 'User Email does not Exist!', passwordError: '' };
@@ -160,7 +150,7 @@ app.post("/register", (req, res) => {
     return;
   }
 
-  const foundUser = findUser(email, users);
+  const foundUser = getUserByEmail(email, users);
 
   if (foundUser) {
     res.status(404);
