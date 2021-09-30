@@ -37,7 +37,7 @@ const users = {
 };
 
 const getLongURL = function(shortURL) {
-  if (urlDatabase[shortURL]['longURL']) {
+  if (urlDatabase[shortURL]) {
     return urlDatabase[shortURL]['longURL'];
   }
   return "URL Doesn't Exist!";
@@ -101,7 +101,17 @@ const authenticateUser = function(formElements, users) {
   return { status: true, user};
 };
 
-app.get("/", (req, res) => {
+const urlsForUser = function (id, urlDatabase) {
+  const filteredURLs = {};
+  for (let urlId in urlDatabase) {
+    if (urlDatabase[urlId]['userID'] === id) {
+      filteredURLs[urlId] = urlDatabase[urlId];
+    }
+  }
+  return filteredURLs;
+};
+
+/* app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
@@ -111,7 +121,7 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
+}); */
 
 //Code to get Registration User Form
 app.get("/register", (req, res) => {
@@ -210,7 +220,8 @@ app.post("/logout", (req, res) => {
 app.get("/urls", (req, res) => {
   const loggedInUserId = req.cookies["user_id"];
   const user = users[loggedInUserId];
-  const templateVars = { user, urls: urlDatabase };
+  const filteredURLs = urlsForUser(loggedInUserId, urlDatabase);
+  const templateVars = { user, urls: filteredURLs };
   res.render("urls_index", templateVars);
 });
 
