@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
 
 const { urlDatabase, users } = require('./db');
-const { getUserByEmail, getLongURL, generateRandomString } = require('./helpers/helpers');
+const { getUserByEmail, getLongURL, generateRandomString } = require('./helpers/helper');
 
 const app = express();
 const PORT = 8080; // default port 8080
