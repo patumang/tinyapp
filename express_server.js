@@ -13,8 +13,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW"
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW"
+  }
 };
 
 const users = {
@@ -31,8 +37,8 @@ const users = {
 };
 
 const getLongURL = function(shortURL) {
-  if (urlDatabase[shortURL]) {
-    return urlDatabase[shortURL];
+  if (urlDatabase[shortURL]['longURL']) {
+    return urlDatabase[shortURL]['longURL'];
   }
   return "URL Doesn't Exist!";
 };
@@ -209,8 +215,11 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  const loggedInUserId = req.cookies["user_id"];
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = {};
+  urlDatabase[shortURL]['longURL'] = req.body.longURL;
+  urlDatabase[shortURL]['userID'] = loggedInUserId;
   res.redirect('/urls/' + shortURL);
 });
 
@@ -219,6 +228,7 @@ app.get("/urls/new", (req, res) => {
   if (!loggedInUserId) {
     res.status(403);
     res.redirect('/login');
+    return;
   }
 
   const user = users[loggedInUserId];
@@ -241,7 +251,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const newLongURL = req.body.newURL;
-  urlDatabase[shortURL] = newLongURL;
+  urlDatabase[shortURL]['longURL'] = newLongURL;
 
   res.redirect('/urls');
 });
