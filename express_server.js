@@ -6,6 +6,7 @@ const cookieSession = require('cookie-session');
 
 const { urlDatabase, users } = require('./db');
 const { getUserByEmail, getLongURL, generateRandomString } = require('./helpers/helper');
+const { isFormInvalid } = require('./helpers/validation');
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -18,25 +19,6 @@ app.use(cookieSession({
   name: 'session',
   keys: ['%jclanLjsH#!BQ83', 'skf#SL48lp2*0aP']
 }));
-
-const isFormInvalid = function(formElements) {
-
-  const emailError = formElements.email === '' ? 'Invalid Email' : '';
-  const passwordError = formElements.password === '' ? 'Invalid Password' : '';
-
-  if (emailError === '' && passwordError === '') {
-    return false;
-  }
-
-  return {
-    user: null,
-    email: formElements.email,
-    password: '',
-    emailError,
-    passwordError
-  };
-
-};
 
 const authenticateUser = function(formElements, users) {
   const email = formElements.email;
