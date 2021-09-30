@@ -7,6 +7,7 @@ const cookieSession = require('cookie-session');
 const { urlDatabase, users } = require('./db');
 const { getUserByEmail, getLongURL, generateRandomString } = require('./helpers/helper');
 const { isFormInvalid } = require('./helpers/validation');
+const { authenticateUser } = require('./helpers/authentication');
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -19,23 +20,6 @@ app.use(cookieSession({
   name: 'session',
   keys: ['%jclanLjsH#!BQ83', 'skf#SL48lp2*0aP']
 }));
-
-const authenticateUser = function(formElements, users) {
-  const email = formElements.email;
-  const password = formElements.password;
-
-  const user = getUserByEmail(email, users);
-
-  if (!user) {
-    return { status: false, emailError: 'User Email does not Exist!', passwordError: '' };
-  }
-
-  if (!bcrypt.compareSync(password, user.password)) {
-    return { status: false, emailError: '', passwordError: 'Password doesn\'t Match!' };
-  }
-  
-  return { status: true, user};
-};
 
 const urlsForUser = function(id, urlDatabase) {
   const filteredURLs = {};
