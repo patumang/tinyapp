@@ -216,6 +216,11 @@ app.post("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const loggedInUserId = req.cookies["user_id"];
+  if (!loggedInUserId) {
+    res.status(403);
+    res.redirect('/login');
+  }
+
   const user = users[loggedInUserId];
   const templateVars = { user};
   res.render("urls_new", templateVars);
