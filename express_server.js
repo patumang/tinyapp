@@ -21,16 +21,21 @@ app.use(cookieSession({
   keys: ['%jclanLjsH#!BQ83', 'skf#SL48lp2*0aP']
 }));
 
-//Code to get Registration User Form
-app.get("/register", (req, res) => {
-  //const loggedInUserId = req.cookies["user_id"];
+app.use((req, res, next) => {
   const loggedInUserId = req.session["user_id"];
+  const path = req.path;
+  const allowedPaths = ["/", "/register", "/login"];
 
-  if (loggedInUserId) {
-    res.redirect('/urls');
-    return;
+  if (loggedInUserId && allowedPaths.includes(path)) {
+    return res.redirect("/urls");
   }
 
+  next();
+});
+
+
+//Code to get Registration User Form
+app.get("/register", (req, res) => {
   const templateVars = { user: null, email: '', password: '', emailError:'', passwordError:'' };
   res.render('user_register', templateVars);
 });
@@ -64,22 +69,12 @@ app.post("/register", (req, res) => {
     password
   };
 
-  //res.cookie('user_id', userId);
   req.session['user_id'] = userId;
   res.redirect('/urls');
-
 });
 
 //Code to get User Login Form
 app.get("/login", (req, res) => {
-  //const loggedInUserId = req.cookies["user_id"];
-  const loggedInUserId = req.session["user_id"];
-
-  if (loggedInUserId) {
-    res.redirect('/urls');
-    return;
-  }
-
   const templateVars = { user: null, email: '', password: '', emailError: '', passwordError: '' };
   res.render('user_login', templateVars);
 });
@@ -111,20 +106,17 @@ app.post("/login", (req, res) => {
     return;
   }
 
-  //res.cookie('user_id', autheticatedUser.user.id);
   req.session['user_id'] = autheticatedUser.user.id;
   res.redirect('/urls');
 });
 
 //Code to Logout
 app.post("/logout", (req, res) => {
-  //res.clearCookie('user_id');
   req.session = null;
   res.redirect('/urls');
 });
 
 app.get("/urls", (req, res) => {
-  //const loggedInUserId = req.cookies["user_id"];
   const loggedInUserId = req.session["user_id"];
   const user = users[loggedInUserId];
   const filteredURLs = urlsForUser(loggedInUserId, urlDatabase);
@@ -133,7 +125,6 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  //const loggedInUserId = req.cookies["user_id"];
   const loggedInUserId = req.session["user_id"];
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {};
@@ -143,7 +134,6 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  //const loggedInUserId = req.cookies["user_id"];
   const loggedInUserId = req.session["user_id"];
   if (!loggedInUserId) {
     res.status(403);
@@ -166,7 +156,6 @@ app.get("/urls/:shortURL", (req, res) => {
 
   const longURL = getLongURL(shortURL, urlDatabase);
 
-  //const loggedInUserId = req.cookies["user_id"];
   const loggedInUserId = req.session["user_id"];
 
   let userCanEdit = false;
@@ -182,7 +171,6 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // Code to Update longURL
 app.post("/urls/:shortURL", (req, res) => {
-  //const loggedInUserId = req.cookies["user_id"];
   const loggedInUserId = req.session["user_id"];
 
   if (!loggedInUserId) {
@@ -227,7 +215,6 @@ app.get("/u/:shortURL", (req, res) => {
 
 //Code to Delete shortURL from params
 app.post("/urls/:shortURL/delete", (req, res) => {
-  //const loggedInUserId = req.cookies["user_id"];
   const loggedInUserId = req.session["user_id"];
 
   if (!loggedInUserId) {
@@ -252,5 +239,5 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`TinyApp listening on port ${PORT}!`);
 });
