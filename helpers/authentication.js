@@ -17,7 +17,6 @@ const redirectToUrls = function(req, res, next) {
 
   const shortURL = req.params.shortURL;
   if (shortURL) {
-    console.log(shortURL);
     let user = null;
     let urls = {};
 
@@ -31,10 +30,8 @@ const redirectToUrls = function(req, res, next) {
     }
 
     if (req.method === 'GET') {
-      console.log(req.method);
       const longURL = getLongURL(shortURL, res.locals.urlDatabase);
       if (path.substr(0, 6) === '/urls/') {
-        console.log(path);
         urls = { shortURL, longURL };
         res.locals.urls = urls;
         res.locals.user = user;
