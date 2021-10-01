@@ -1,6 +1,18 @@
 const bcrypt = require('bcryptjs');
 const { getUserByEmail } = require('./helper');
 
+const redirectToUrls = function(req, res, next) {
+  const loggedInUserId = req.session["user_id"];
+  const path = req.path;
+  const allowedPaths = ["/", "/register", "/login"];
+
+  if (loggedInUserId && allowedPaths.includes(path)) {
+    return res.redirect("/urls");
+  }
+
+  next();
+};
+
 const authenticateUser = function(formElements, users) {
   const email = formElements.email;
   const password = formElements.password;
@@ -18,4 +30,4 @@ const authenticateUser = function(formElements, users) {
   return { status: true, user };
 };
 
-module.exports = { authenticateUser };
+module.exports = { redirectToUrls, authenticateUser };

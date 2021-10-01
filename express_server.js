@@ -6,8 +6,8 @@ const cookieSession = require('cookie-session');
 
 const { urlDatabase, users } = require('./db');
 const { getUserByEmail, getLongURL, generateRandomString, urlsForUser } = require('./helpers/helper');
-const { isFormInvalid } = require('./helpers/validation');
-const { authenticateUser } = require('./helpers/authentication');
+const { invalidForm } = require('./helpers/validation');
+const { redirectToUrls, authenticateUser } = require('./helpers/authentication');
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -21,47 +21,28 @@ app.use(cookieSession({
   keys: ['%jclanLjsH#!BQ83', 'skf#SL48lp2*0aP']
 }));
 
-const redirectToUrls = function(req, res, next) {
-  const loggedInUserId = req.session["user_id"];
-  const path = req.path;
-  const allowedPaths = ["/", "/register", "/login"];
-
-  if (loggedInUserId && allowedPaths.includes(path)) {
-    return res.redirect("/urls");
-  }
-
-  next();
-};
-
 //Code to get Registration User Form
 app.get("/register", redirectToUrls, (req, res) => {
-  const templateVars = { user: null, email: '', password: '', emailError:'', passwordError:'' };
+  const templateVars = { user: null, elements: {}, errors:{} };
   res.render('user_register', templateVars);
 });
 
 //Code to Register user by adding user data to db object and set cookie
-app.post("/register", (req, res) => {
+app.post("/register", invalidForm, (req, res) => {
   const email = req.body.email;
-  const password = bcrypt.hashSync(req.body.password, 10);
-
-  const invalidForm = isFormInvalid({email, password});
-  
-  if (invalidForm) {
-    res.status(404);
-    res.render('user_register', invalidForm);
-    return;
-  }
+  let password = req.body.password;
 
   const foundUser = getUserByEmail(email, users);
 
   if (foundUser) {
     res.status(404);
-    const templateVars = { user: null, email, password: '', emailError: 'User already Exist!', passwordError:'' };
+    const templateVars = { user: null, elements: { email }, errors: {emailError: 'User already Exist!'} };
     res.render('user_register', templateVars);
     return;
   }
 
   const userId = generateRandomString();
+  password = bcrypt.hashSync(password, 10);
   users[userId] = {
     id: userId,
     email,
@@ -74,31 +55,25 @@ app.post("/register", (req, res) => {
 
 //Code to get User Login Form
 app.get("/login", redirectToUrls, (req, res) => {
-  const templateVars = { user: null, email: '', password: '', emailError: '', passwordError: '' };
+  const templateVars = { user: null, elements: {}, errors: {} };
   res.render('user_login', templateVars);
 });
 
 //Code to Login
-app.post("/login", (req, res) => {
-  const { email, password } = req.body;
-
-  const invalidForm = isFormInvalid({ email, password });
-
-  if (invalidForm) {
-    res.status(404);
-    res.render('user_login', invalidForm);
-    return;
-  }
+app.post("/login", invalidForm, (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
 
   const autheticatedUser = authenticateUser({ email, password }, users);
   if (!autheticatedUser.status) {
     res.status(403);
     const templateVars = {
       user: null,
-      email,
-      password: '',
-      emailError: autheticatedUser.emailError,
-      passwordError: autheticatedUser.passwordError
+      elements: { email },
+      errors: {
+        emailError: autheticatedUser.emailError,
+        passwordError: autheticatedUser.passwordError
+      }
     };
 
     res.render('user_login', templateVars);
