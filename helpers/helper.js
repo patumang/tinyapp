@@ -12,7 +12,7 @@ const getLongURL = function(shortURL, urlDatabase) {
   if (urlDatabase[shortURL]) {
     return urlDatabase[shortURL]['longURL'];
   }
-  return "URL Doesn't Exist!";
+  return false;
 };
 
 const generateRandomString = function() {

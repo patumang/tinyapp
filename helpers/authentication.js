@@ -1,13 +1,63 @@
 const bcrypt = require('bcryptjs');
-const { getUserByEmail } = require('./helper');
+const { getUserByEmail, getLongURL } = require('./helper');
 
 const redirectToUrls = function(req, res, next) {
   const loggedInUserId = req.session["user_id"];
   const path = req.path;
-  const allowedPaths = ["/", "/register", "/login"];
+  const redirectToUrlsPaths = ["/", "/register", "/login"];
 
-  if (loggedInUserId && allowedPaths.includes(path)) {
+  if (loggedInUserId && redirectToUrlsPaths.includes(path)) {
     return res.redirect("/urls");
+  }
+
+  const redirectToLoginPaths = ["/", "/urls", "/urls/new"];
+  if (!loggedInUserId && redirectToLoginPaths.includes(path)) {
+    return res.status(403).redirect("/login");
+  }
+
+  const shortURL = req.params.shortURL;
+  if (shortURL) {
+    console.log(shortURL);
+    let user = null;
+    let urls = {};
+
+    if (loggedInUserId) {
+      user = res.locals.users[loggedInUserId];
+    }
+
+    if (!res.locals.urlDatabase[shortURL]) {
+      const templateVars = { user, urls, errors: { urlError: 'Input short URL is not valid!' } };
+      return res.status(403).render("urls_show", templateVars);
+    }
+
+    if (req.method === 'GET') {
+      console.log(req.method);
+      const longURL = getLongURL(shortURL, res.locals.urlDatabase);
+      if (path.substr(0, 6) === '/urls/') {
+        console.log(path);
+        urls = { shortURL, longURL };
+        res.locals.urls = urls;
+        res.locals.user = user;
+      } else {
+        if (!longURL) {
+          const templateVars = { user, urls, errors: { urlError: 'Sorry can\'t find URL!' } };
+          return res.status(403).render("urls_show", templateVars);
+        } else {
+          res.locals.longURL = longURL;
+          next();
+        }
+      }
+    }
+
+    if (!loggedInUserId) {
+      const templateVars = { user, urls, errors: { userError: 'You are not logged in currently!' } };
+      return res.status(403).render("urls_show", templateVars);
+    }
+
+    if (loggedInUserId && loggedInUserId !== res.locals.urlDatabase[shortURL]['userID']) {
+      const templateVars = { user, urls, errors: { userError: 'You doesn\'t own this URL!' } };
+      return res.status(403).render("urls_show", templateVars);
+    }
   }
 
   next();

@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
 
 const { urlDatabase, users } = require('./db');
-const { getUserByEmail, getLongURL, generateRandomString, urlsForUser } = require('./helpers/helper');
+const { getUserByEmail, generateRandomString, urlsForUser } = require('./helpers/helper');
 const { invalidForm } = require('./helpers/validation');
 const { redirectToUrls, authenticateUser } = require('./helpers/authentication');
 
@@ -20,6 +20,11 @@ app.use(cookieSession({
   name: 'session',
   keys: ['%jclanLjsH#!BQ83', 'skf#SL48lp2*0aP']
 }));
+
+//ROUTES
+
+//root path
+app.get("/", redirectToUrls);
 
 //Code to get Registration User Form
 app.get("/register", redirectToUrls, (req, res) => {
@@ -94,11 +99,11 @@ app.get("/urls", (req, res) => {
   const loggedInUserId = req.session["user_id"];
   const user = users[loggedInUserId];
   const filteredURLs = urlsForUser(loggedInUserId, urlDatabase);
-  const templateVars = { user, urls: filteredURLs };
+  const templateVars = { user, urls: filteredURLs, errors: {} };
   res.render("urls_index", templateVars);
 });
 
-app.post("/urls", (req, res) => {
+app.post("/urls", redirectToUrls, (req, res) => {
   const loggedInUserId = req.session["user_id"];
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {};
@@ -107,110 +112,70 @@ app.post("/urls", (req, res) => {
   res.redirect('/urls/' + shortURL);
 });
 
-app.get("/urls/new", (req, res) => {
+app.get("/urls/new", redirectToUrls, (req, res) => {
   const loggedInUserId = req.session["user_id"];
-  if (!loggedInUserId) {
-    res.status(403);
-    res.redirect('/login');
-    return;
-  }
 
   const user = users[loggedInUserId];
   const templateVars = { user};
   res.render("urls_new", templateVars);
 });
 
-app.get("/urls/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-
-  if (!urlDatabase[shortURL]) {
-    res.status(403).send('Input short URL is not valid!');
-    return;
+app.get("/urls/:shortURL",
+  (req, res, next) => {
+    res.locals.users = users;
+    res.locals.urlDatabase = urlDatabase;
+    next();
+  },
+  redirectToUrls,
+  (req, res) => {
+    const templateVars = { user: res.locals.user , urls: res.locals.urls , errors: {} };
+    res.render("urls_show", templateVars);
   }
-
-  const longURL = getLongURL(shortURL, urlDatabase);
-
-  const loggedInUserId = req.session["user_id"];
-
-  let userCanEdit = false;
-
-  if (loggedInUserId && loggedInUserId === urlDatabase[shortURL]['userID']) {
-    userCanEdit = true;
-  }
-  const user = users[loggedInUserId];
-
-  const templateVars = { user, userCanEdit, shortURL, longURL };
-  res.render("urls_show", templateVars);
-});
+);
 
 // Code to Update longURL
-app.post("/urls/:shortURL", (req, res) => {
-  const loggedInUserId = req.session["user_id"];
+app.post("/urls/:shortURL",
+  (req, res, next) => {
+    res.locals.users = users;
+    res.locals.urlDatabase = urlDatabase;
+    next();
+  },
+  redirectToUrls,
+  (req, res) => {
+    const shortURL = req.params.shortURL;
+    const newLongURL = req.body.newURL;
+    urlDatabase[shortURL]['longURL'] = newLongURL;
 
-  if (!loggedInUserId) {
-    res.status(403).send('You are not logged in currently!');
-    return;
+    res.redirect('/urls');
   }
+);
 
-  const shortURL = req.params.shortURL;
-  const newLongURL = req.body.newURL;
-
-  if (!urlDatabase[shortURL]) {
-    res.status(403).send('Input short URL is not valid!');
-    return;
+app.get("/u/:shortURL",
+  (req, res, next) => {
+    res.locals.users = users;
+    res.locals.urlDatabase = urlDatabase;
+    next();
+  },
+  redirectToUrls,
+  (req, res) => {
+    res.redirect(res.locals.longURL);
   }
-
-  if (loggedInUserId && loggedInUserId !== urlDatabase[shortURL]['userID']) {
-    res.status(403).send('You doesn\'t own this URL!');
-    return;
-  }
-
-  urlDatabase[shortURL]['longURL'] = newLongURL;
-
-  res.redirect('/urls');
-});
-
-app.get("/u/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-
-  if (!urlDatabase[shortURL]) {
-    res.status(403).send('Input short URL is not valid!');
-    return;
-  }
-
-  const longURL = getLongURL(shortURL, urlDatabase);
-
-  if (longURL === "URL Doesn't Exist!") {
-    res.status(404).send("Sorry can't find URL!");
-  } else {
-    res.redirect(longURL);
-  }
-});
+);
 
 //Code to Delete shortURL from params
-app.post("/urls/:shortURL/delete", (req, res) => {
-  const loggedInUserId = req.session["user_id"];
-
-  if (!loggedInUserId) {
-    res.status(403).send('You are not logged in currently!');
-    return;
+app.post("/urls/:shortURL/delete",
+  (req, res, next) => {
+    res.locals.users = users;
+    res.locals.urlDatabase = urlDatabase;
+    next();
+  },
+  redirectToUrls,
+  (req, res) => {
+    const shortURL = req.params.shortURL;
+    delete urlDatabase[shortURL];
+    res.redirect('/urls');
   }
-
-  const shortURL = req.params.shortURL;
-
-  if (!urlDatabase[shortURL]) {
-    res.status(403).send('Input short URL is not valid!');
-    return;
-  }
-
-  if (loggedInUserId && loggedInUserId !== urlDatabase[shortURL]['userID']) {
-    res.status(403).send('You doesn\'t own this URL!');
-    return;
-  }
-  
-  delete urlDatabase[shortURL];
-  res.redirect('/urls');
-});
+);
 
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
