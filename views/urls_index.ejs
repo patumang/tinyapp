@@ -12,6 +12,7 @@
 </head>
 
 <body>
+  <!-- include header -->
   <%- include('partials/_header') %>
   <main style="margin: 1em;">
     <!-- if user is logged in show URLs -->
@@ -28,7 +29,7 @@
         </tr>
       </thead>
       <tbody>
-        <!-- loop through each urls -->
+        <!-- if no urls found show message accordingly -->
         <% if (Object.keys(urls).length === 0) { %> 
           <tr>
             <td>
@@ -36,6 +37,7 @@
             </td>
           </tr>
         <% } %> 
+        <!-- loop through each urls -->
         <% for(let url in urls) { %>
           <tr>
             <form method="POST" action="/urls/<%= url %>/delete">
@@ -56,6 +58,7 @@
         <% } %>
       </tbody>
     </table>
+    <!-- if user is not logged in, show error message -->
     <% } else { %>
     <h5>Please <a href="/login">login</a> to see your URLs</h5>
     <% } %>

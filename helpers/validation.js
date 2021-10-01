@@ -1,11 +1,13 @@
+//middleware function to check for invalid form input
 const invalidForm = function(req, res, next) {
   const email = req.body.email;
   const password = req.body.password;
 
-
+  //if email or password is blank store in error variable
   const emailError = email === '' ? 'Invalid Email' : '';
   const passwordError = password === '' ? 'Invalid Password' : '';
 
+  //if any of the form input is empty return html with error message
   if (emailError || passwordError) {
     const templateVars = {
       user: null,

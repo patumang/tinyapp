@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 
+//url database
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -11,6 +12,7 @@ const urlDatabase = {
   }
 };
 
+//users database
 const users = {
   "userRandomID": {
     id: "userRandomID",

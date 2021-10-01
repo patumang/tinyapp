@@ -13,11 +13,12 @@
 </head>
 
 <body>
-
+  <!-- include header -->
   <%- include('partials/_header') %>
 
     <main style="margin: 1em;">
       <h3>Create TinyURL</h3>
+      <!-- form to add new longURL -->
       <form class="form-inline" action="/urls" method="POST">
         <div class="form-group mb-2">
           <label for="longURL">Enter a URL:</label>

@@ -9,7 +9,9 @@
 </head>
 
 <body>
+  <!-- include header -->
   <%- include('partials/_header') %>
+  <!-- if invalid shortURL show error message -->
   <% if (errors.urlError) { %>
     <h6>
       <%= errors.urlError %>
@@ -18,20 +20,22 @@
     <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
-        <h5 class="card-title">TinyURL for: <%= urls.longURL %>
-        </h5>
+        <!-- display longURL -->
+        <h5 class="card-title">TinyURL for: <%= urls.longURL %></h5>
+        <!-- display shortURL -->
         <p class="card-text">Short URL: 
           <a href="/u/<%= urls.shortURL %>">
             <%= urls.shortURL %>
           </a>
         </p>
       </div>
-      <!-- Logic to edit longURL -->
+      <!-- if user not logged in or doen't own url, shor error message -->
       <% if (errors.userError) { %>
         <h6>
           <%= errors.userError %>
         </h6>
       <% } else { %> 
+        <!-- Logic to edit longURL -->
         <div class="card-footer text-muted">
           <h3>Edit</h3>
           <form class="form-inline justify-content-center" method="POST" action="/urls/<%= urls.shortURL %>">
